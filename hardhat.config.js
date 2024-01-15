@@ -17,12 +17,16 @@ module.exports = {
 
     ]
   },
+  defaultNetwork: "hardhat",
+
   networks: {
     hardhat: {
       forking: {
         url:"https://bsc-dataseed.binance.org/",
       }
-    },
+    }
+    
+    ,
     testnet:{
       url:"https://data-seed-prebsc-1-s1.binance.org:8545",
       chainId: 97,
@@ -30,6 +34,7 @@ module.exports = {
         "0x407348cb00e968f471de1d56bd6697c41374fe3caceea78c50f30e24ce71bc30"
     ],
     },
+
     mainnet: {
       url: "https://bsc-dataseed.binance.org/",
       chainId: 56,

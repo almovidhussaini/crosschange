@@ -15,16 +15,13 @@ import "./interfaces/IERC20.sol";
 //Uniswap interface and library imports
 
 contract PancakeFlashwap {
+
     using SafeERC20 for IERC20;
-
     // Factory and Routing address
-
     address private constant PANCAKE_FACTORY =
         0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73;
-
     address private constant PANCAKE_ROUTER =
         0x10ED43C718714eb63d5aA57B78B54704E256024E;
-
     //Token Addressess
     address private constant WBNB = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
     address private constant BUSD = 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56;
@@ -55,7 +52,6 @@ contract PancakeFlashwap {
 
     //INITIATE ARBITRAGE
     // Begins receiving loan to engage performing arbitrage trades
-
     function startArbitrage(address _tokenBorrow, uint256 _amount) external {
         IERC20(BUSD).safeApprove(address(PANCAKE_ROUTER), MAX_INT);
         IERC20(USDT).safeApprove(address(PANCAKE_ROUTER), MAX_INT);
@@ -104,6 +100,8 @@ contract PancakeFlashwap {
         require(msg.sender == pair, "The sender needs to match the pair");
         require(_sender == address(this), "Sender should match this contract");
 
+        // require(pair == 0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16,"Not equal address value");
+
         // Decode data for calculating the repayment
         (address tokenBorrow, uint256 amount) = abi.decode(
             _data,
@@ -114,10 +112,14 @@ contract PancakeFlashwap {
         uint256 fee = ((amount +3) / 997) + 1;
         uint256 amountToRepay = amount + fee;
 
+
         // Do ARBITRAGE
         // !!!!!!!!!!!!!!
 
         // Pay loan back
-        IERC20(tokenBorrow).transfer(pair, amountToRepay);
+
+        require(IERC20(tokenBorrow).balanceOf(address(this))>= amountToRepay, "Not enough repay!" );
+          IERC20(tokenBorrow).transfer(pair, amountToRepay);
+        // IERC20(tokenBorrow).transferFrom(address(this), address(this), amountToRepay);
     }
 }
