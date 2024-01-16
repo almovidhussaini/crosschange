@@ -77,7 +77,19 @@ describe("FlashSwap Contract", () => {
     );
     console.log("Balance of User: " + formattedUserBalance);
 
-   })
+   });
+
+   it("provides GAS output", async () => {
+    const txReceipt = await provider.getTransactionReceipt(txArbitrage.hash);
+    const effGasPrice = txReceipt.effectiveGasPrice;
+    const txGasUsed = txReceipt.gasUsed;
+    const gasUsedETH = effGasPrice * txGasUsed;
+    console.log(
+      "Total Gas USD: " +
+        ethers.utils.formatEther(gasUsedETH.toString()) * 2900 // exchange rate today
+    );
+    expect(gasUsedETH).not.equal(0);
+  });
   })
 
 });
