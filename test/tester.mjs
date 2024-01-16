@@ -16,22 +16,25 @@ describe("FlashSwap Contract", () => {
 
   let FLASHSWAP, BORROW_AMOUNT, FUND_AMOUNT, initiateFundingHuman, txArbitrage, gasUsedUSD;
 
-  const DECIMALS =18;
+  const DECIMALS =6;
 
-  const BUSD_WHALE = "0xd2f93484f2d319194cba95c5171b18c1d8cfd6c4";
+  const USDC_WHALE = "0x28c6c06298d514db089934071355e5743bf21d60";
 
-  const BUSD = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56";
-  const USDT = "0x55d398326f99059fF775485246999027B3197955";
-  const CROX = "0x2c094F5A7D1146BB93850f629501eB749f6Ed491";
-  const CAKE = "0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82";
-  const BASE_TOKEN_ADDRESS = BUSD;
+  const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+  const LINK = "0x514910771AF9Ca656af840dff83E8264EcF986CA";
+
+  const USERADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+  const BASE_TOKEN_ADDRESS = USDC;
+
   const tokenBase = new ethers.Contract(BASE_TOKEN_ADDRESS, abi, provider);
 
   beforeEach(async () => {
     const [owner] = await ethers.getSigners();
     // console.log(owner,'owner')
-    const whale_balance = await provider.getBalance(BUSD_WHALE);
-    const FlashSwap = await ethers.getContractFactory("PancakeFlashwap");
+    const whale_balance = await provider.getBalance(USDC_WHALE);
+
+    const FlashSwap = await ethers.getContractFactory("UniswapCrossFlash");
+
     FLASHSWAP = await FlashSwap.deploy();
     await FLASHSWAP.deployed();
     const borrowAmountHuman = "1";
@@ -40,14 +43,13 @@ describe("FlashSwap Contract", () => {
     initiateFundingHuman="100"
     // Configure Funding
     FUND_AMOUNT = ethers.utils.parseUnits(initiateFundingHuman, DECIMALS);
-    // console.log(FUND_AMOUNT.toString(),'FUND_AMOUNT')
-    //Fund our Contract -- For testing Only]
-    await impersonateFundErc20(tokenBase, BUSD_WHALE, FLASHSWAP.address, initiateFundingHuman);
+    await impersonateFundErc20(tokenBase, USDC_WHALE, FLASHSWAP.address, initiateFundingHuman, DECIMALS);
   });
   describe("Arbitrage Execution", () => {
     it("ensure the contract is funded", async () => {
       const flashSwapBalance = await FLASHSWAP.getBalanceOfToken(BASE_TOKEN_ADDRESS);
       const flashSwapBalanceHuman = ethers.utils.formatUnits(flashSwapBalance, DECIMALS);
+
       expect(Number(flashSwapBalanceHuman)).equal(Number(initiateFundingHuman));
     });
 
@@ -57,32 +59,26 @@ describe("FlashSwap Contract", () => {
       BORROW_AMOUNT
     );
     assert(txArbitrage);
-    const contractBalanceBUSD = await FLASHSWAP.getBalanceOfToken(BUSD);
-    const formattedBalBUSD = Number(
-      ethers.utils.formatUnits(contractBalanceBUSD, DECIMALS)
+    const contractBalanceUSDC = await FLASHSWAP.getBalanceOfToken(USDC);
+    const formattedBalUSDC = Number(
+      ethers.utils.formatUnits(contractBalanceUSDC, DECIMALS)
     );
-    console.log("Balance of BUSD: " + formattedBalBUSD);
+    console.log("Balance of USDC: " + formattedBalUSDC);
 
-    const contractBalanceCROX = await FLASHSWAP.getBalanceOfToken(CROX);
-    const formattedBalCROX = Number(
-      ethers.utils.formatUnits(contractBalanceCROX, DECIMALS)
+    const contractBalanceLINK = await FLASHSWAP.getBalanceOfToken(LINK);
+    const formattedBalLINK = Number(
+      ethers.utils.formatUnits(contractBalanceLINK, DECIMALS)
     );
-    console.log("Balance of CROX: " + formattedBalCROX);
+    console.log("Balance of LINK: " + formattedBalLINK);
+    
+    const getUserBalance = await FLASHSWAP.getBalanceOfUser(USERADDRESS, USDC);
+    const formattedUserBalance = Number(
+      ethers.utils.formatUnits(getUserBalance, DECIMALS)
+    );
+    console.log("Balance of User: " + formattedUserBalance);
 
-    const contractBalanceCAKE = await FLASHSWAP.getBalanceOfToken(CAKE);
-    const formattedBalCAKE = Number(
-      ethers.utils.formatUnits(contractBalanceCAKE, DECIMALS)
-    );
-    console.log("Balance of CAKE: " + formattedBalCAKE);
    })
   })
-
-  // it("general test",  async () => {
-  //   const whale_balance = await provider.getBalance(BUSD_WHALE);
-  //   console.log(ethers.utils.formatUnits( whale_balance.toString(), DECIMALS),'whale_balance')
-
-  // })
-
 
 });
 
